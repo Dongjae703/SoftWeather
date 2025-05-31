@@ -53,7 +53,7 @@ import java.time.YearMonth
 
 @Composable
 fun ScheduleScreen(navController: NavController) {
-    val currentRoute = Routes.MainScreen.route
+    val currentRoute = Routes.SceduleScreen.route
     var selectedTab by remember { mutableStateOf("일정") }
     var selectedYM by remember { mutableStateOf(YearMonth.now()) }
     Scaffold(

@@ -34,7 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.softweather.ui.implement.font.NotoSansKR
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -88,11 +90,14 @@ fun SplashScreen(onPermissionGranted: (Double, Double) -> Unit) {
         if (permissionResult == true) {
             val location = try {
                 suspendCancellableCoroutine<Location?> { cont ->
-                    val request = com.google.android.gms.location.LocationRequest.create().apply {
-                        priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
-                        interval = 1000
-                        numUpdates = 1
-                    }
+//                    val request = com.google.android.gms.location.LocationRequest.create().apply {
+//                        priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+//                        interval = 1000
+//                        numUpdates = 1
+//                    }옛날 방식
+                    val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L)
+                        .setMaxUpdates(1)
+                        .build()
 
                     val callback = object : com.google.android.gms.location.LocationCallback() {
                         override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {

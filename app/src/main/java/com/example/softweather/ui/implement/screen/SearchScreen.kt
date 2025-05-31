@@ -32,7 +32,7 @@ import com.example.softweather.ui.mockup.WeatherCardMockup
 
 @Composable
 fun SearchScreen(navController: NavController) {
-    val currentRoute = Routes.MainScreen.route
+    val currentRoute = Routes.SearchScreen.route
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     var selectedTab by remember { mutableStateOf("검색") }
 
