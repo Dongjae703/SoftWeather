@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,9 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.softweather.model.RetrofitInstance
-import com.example.softweather.model.Routes
 import com.example.softweather.model.hourly.HourlyWeatherViewModelFactory
-import com.example.softweather.ui.implement.tool.WeatherCodeConverter
 import com.example.softweather.viewmodel.DBViewModel
 import com.example.softweather.viewmodel.HourlyWeatherViewModel
 import com.example.softweather.viewmodel.WeatherViewModel
@@ -103,8 +100,8 @@ fun WeatherScreen(lat: Double, lon: Double, navController: NavController) {
             Text("현재 습도: $it%", style = MaterialTheme.typography.titleLarge)
         } ?: Text("습도 정보를 불러오는 중...")
 
-        WeatherCodeConverter(weatherCode)
-        Button(onClick = {navController.navigate( Routes.DailyWeatherScreen.createRoute(lat.toString(), lon.toString()))}) { }
-        Text(locationText.value)
+//        WeatherCodeConverter(weatherCode)
+//        Button(onClick = {navController.navigate( Routes..createRoute(lat.toString(), lon.toString()))}) { }
+//        Text(locationText.value)
     }
 }

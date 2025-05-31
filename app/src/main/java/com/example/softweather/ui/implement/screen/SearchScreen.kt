@@ -1,4 +1,4 @@
-package com.example.softweather.ui.mockup
+package com.example.softweather.ui.implement.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -8,14 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -28,12 +24,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.softweather.ui.implement.tool.BottomBarItem
+import androidx.navigation.NavController
+import com.example.softweather.model.Routes
+import com.example.softweather.ui.implement.tool.NavigationBarTemplete
+import com.example.softweather.ui.mockup.WeatherCardMockup
 
 @Composable
-fun SearchScreenMockup() {
+fun SearchScreen(navController: NavController) {
+    val currentRoute = Routes.MainScreen.route
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     var selectedTab by remember { mutableStateOf("검색") }
 
@@ -46,12 +45,7 @@ fun SearchScreenMockup() {
                     color = MaterialTheme.colorScheme.outlineVariant,
                     thickness = 1.dp
                 )
-                NavigationBar(containerColor = Color.White) {
-                    BottomBarItem("홈", Icons.Outlined.Home, selectedTab == "홈") { selectedTab = "홈" }
-                    BottomBarItem("검색", Icons.Outlined.Search, selectedTab == "검색") { selectedTab = "검색" }
-                    BottomBarItem("일정", Icons.Outlined.Event, selectedTab == "일정") { selectedTab = "일정" }
-                    BottomBarItem("과거", Icons.Outlined.History, selectedTab == "과거") { selectedTab = "과거" }
-                }
+                NavigationBarTemplete(selectedTab, onTabSelected = {selectedTab=it},currentRoute,navController)
             }
         }
     ) { padding ->
@@ -91,10 +85,4 @@ fun SearchScreenMockup() {
 
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewSearchScreenMockup() {
-    SearchScreenMockup()
 }

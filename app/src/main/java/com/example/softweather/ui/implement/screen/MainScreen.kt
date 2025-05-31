@@ -1,4 +1,4 @@
-package com.example.softweather.ui.mockup
+package com.example.softweather.ui.implement.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -7,16 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -30,15 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.softweather.ui.implement.screen.WeatherInfoScreen
-import com.example.softweather.ui.implement.tool.BottomBarItem
+import com.example.softweather.model.Routes
+import com.example.softweather.ui.implement.tool.NavigationBarTemplete
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreenMockup(lat:Double,lon:Double,navController: NavController) {
+fun MainScreen(lname:String, lat: Double, lon: Double, navController: NavController) {
+    val currentRoute = Routes.MainScreen.route
     var selectedTab by remember { mutableStateOf("홈") }
     val now = LocalDate.now(ZoneId.of("Asia/Seoul"))
     val targetTimeStr = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
@@ -70,12 +66,7 @@ fun MainScreenMockup(lat:Double,lon:Double,navController: NavController) {
                     color = MaterialTheme.colorScheme.outlineVariant // 연회색
                 )
                 // 실제 바텀 네비게이션 바
-                NavigationBar(containerColor = Color.White) {
-                    BottomBarItem("홈", Icons.Outlined.Home, selectedTab == "홈") { selectedTab = "홈" }
-                    BottomBarItem("검색", Icons.Outlined.Search, selectedTab == "검색") { selectedTab = "검색" }
-                    BottomBarItem("일정", Icons.Outlined.Event, selectedTab == "일정") { selectedTab = "일정" }
-                    BottomBarItem("과거", Icons.Outlined.History, selectedTab == "과거") { selectedTab = "과거" }
-                }
+                NavigationBarTemplete(selectedTab, onTabSelected = {selectedTab=it},currentRoute,navController)
             }
         }
     ) { padding ->
@@ -91,16 +82,8 @@ fun MainScreenMockup(lat:Double,lon:Double,navController: NavController) {
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant // 연회색
             )
-            WeatherInfoScreen(targetTimeStr, "현재 위치",lat,lon)
+            WeatherInfoScreen(targetTimeStr, lname, lat, lon)
 
         }
     }
 }
-
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewMainScreenMockup() {
-//    MainScreenMockup("","",)
-//}
