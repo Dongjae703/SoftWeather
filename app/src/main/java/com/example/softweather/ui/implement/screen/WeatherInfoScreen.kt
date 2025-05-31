@@ -309,6 +309,8 @@ fun WeatherDayItem(day: String, weatherCode: Int?, temperatureMin: Double?, temp
                 fontFamily = NotoSansKR
             )
         }
+
+
         Text("$temperatureMin°/$temperatureMax", fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
     }
 }
