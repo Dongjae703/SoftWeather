@@ -95,7 +95,7 @@ fun CitySearchScreen(navController: NavController) {
                                 }
 
                                 navController.navigate(
-                                    Routes.WeatherScreen.createRoute(
+                                    Routes.MainScreen.createRoute(
                                         latLng.latitude.toString(),
                                         latLng.longitude.toString()
                                     )

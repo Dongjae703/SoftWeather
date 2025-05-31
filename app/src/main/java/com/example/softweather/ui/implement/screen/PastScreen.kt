@@ -1,6 +1,7 @@
-package com.example.softweather.ui.mockup
+package com.example.softweather.ui.implement.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,14 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -28,30 +25,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.softweather.ui.implement.tool.BottomBarItem
+import androidx.navigation.NavController
+import com.example.softweather.model.Routes
+import com.example.softweather.ui.implement.tool.NavigationBarTemplete
+import com.example.softweather.ui.mockup.WeatherCardMockup
 
 @Composable
-fun SearchScreenMockup() {
+fun PastScreen(navController: NavController) {
+    val currentRoute = Routes.PastScreen.route
+    var selectedTab by remember { mutableStateOf("과거") }
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedTab by remember { mutableStateOf("검색") }
+    var searchedDate by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
-        modifier = Modifier.background(Color.White),
-        containerColor = Color.White,
         bottomBar = {
             Column {
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant,
                     thickness = 1.dp
                 )
-                NavigationBar(containerColor = Color.White) {
-                    BottomBarItem("홈", Icons.Outlined.Home, selectedTab == "홈") { selectedTab = "홈" }
-                    BottomBarItem("검색", Icons.Outlined.Search, selectedTab == "검색") { selectedTab = "검색" }
-                    BottomBarItem("일정", Icons.Outlined.Event, selectedTab == "일정") { selectedTab = "일정" }
-                    BottomBarItem("과거", Icons.Outlined.History, selectedTab == "과거") { selectedTab = "과거" }
-                }
+                NavigationBarTemplete(selectedTab, onTabSelected = {selectedTab=it}, currentRoute, navController)
             }
         }
     ) { padding ->
@@ -62,15 +56,21 @@ fun SearchScreenMockup() {
                 .background(Color.White)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            //검색창
+
+            //날짜 검색 바
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
-                placeholder = { Text("지역을 검색하세요") },
+                placeholder = { Text("예: 2023.05.01") },
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search Icon"
+                        contentDescription = "검색 아이콘",
+                        modifier = Modifier.clickable {
+                            if (searchText.text.isNotBlank()) {
+                                searchedDate = searchText.text
+                            }
+                        }
                     )
                 },
                 singleLine = true,
@@ -86,15 +86,12 @@ fun SearchScreenMockup() {
                     unfocusedContainerColor = Color.White
                 )
             )
-            //중간에 날씨 카드 창
-            WeatherCardMockup("2025-05-15","건국대학교")
+
+            //검색 결과 표시 ( 검색 아이콘 누르면 뜨는게 의도)
+            searchedDate?.let {searchedDate->
+                WeatherCardMockup(searchedDate,"건국대학교")
+            }
 
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewSearchScreenMockup() {
-    SearchScreenMockup()
 }
