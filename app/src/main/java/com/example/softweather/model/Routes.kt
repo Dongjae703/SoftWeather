@@ -12,7 +12,12 @@ sealed class Routes(val route: String) {
     object MainScreen : Routes("mainScreen/{lat}/{lon}"){
         fun createRoute(lat: String, lon: String): String ="mainScreen/$lat/$lon"
     }
+
     object SearchScreen : Routes("searchScreen")
     object SceduleScreen : Routes("sceduleScreen")
     object PastScreen : Routes("pastScreen")
+
+
+    object MapScreen : Routes("map/{lat}/{lon}")
+
 }
