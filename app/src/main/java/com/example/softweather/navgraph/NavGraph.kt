@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.softweather.model.Routes
+import com.example.softweather.ui.implement.screen.MainScreen
+import com.example.softweather.ui.implement.screen.MapScreen
 import com.example.softweather.ui.implement.screen.SplashScreen
 import com.example.softweather.ui.mockup.MainScreenMockup
 
@@ -32,7 +34,27 @@ fun NavGraph(navController: NavHostController) {
             val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
             val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull()
             if (lat != null && lon != null) {
-                MainScreenMockup(lat, lon, navController)
+                MainScreen(lat, lon, navController)
+            } else {
+                Text("위치 정보 오류")
+            }
+        }
+
+        composable(
+            route = Routes.MapScreen.route,
+            arguments = listOf(
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lon") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+            val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull()
+            if (lat != null && lon != null) {
+                MapScreen(lat, lon,{ newLat, newLon ->
+                    navController.navigate("mainScreen/${newLat}/${newLon}") {
+                        popUpTo("mainScreen/{lat}/{lon}") { inclusive = true }
+                    }
+                }, navController)
             } else {
                 Text("위치 정보 오류")
             }
