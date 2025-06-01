@@ -156,7 +156,7 @@ fun MapScreen(
                         val lon = selectedLatLng.longitude.toString()
 
                         navController.navigate(Routes.MainScreen.createRoute(lat, lon)) {
-                            popUpTo(Routes.SplashScreen.route) { inclusive = false }
+                            popUpTo(Routes.MainScreen.route) { inclusive = false }
                             launchSingleTop = true
                         }
                     },
