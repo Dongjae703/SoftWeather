@@ -50,4 +50,26 @@ class DBViewModel(application: Application) : AndroidViewModel(application) {
             onResult(locations)
         }
     }
+
+
+    fun getLocationById(onResult: (List<LocationDB>) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = locationDao.getID()
+            onResult(result)
+        }
+    }
+
+    fun getAllLocationsSorted(onResult: (List<LocationDB>) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = locationDao.getAllSorted()
+            onResult(result)
+        }
+    }
+
+    fun deleteLocationById(id: Int, onDeleted: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            locationDao.deleteLocationById(id)
+            onDeleted()
+        }
+    }
 }

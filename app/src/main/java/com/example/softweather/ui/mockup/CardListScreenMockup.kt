@@ -28,16 +28,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 
 @Composable
 fun CardListScreenMockup() {
-    // DB없이 리스트
     val mockLocations = remember {
         mutableStateListOf(
             LocationWeather("건국대학교", 37.5404, 127.0796, "☀️", "맑음", 26, 17),
@@ -49,6 +53,15 @@ fun CardListScreenMockup() {
     var isSelectionMode by remember { mutableStateOf(false) }
     val selectedItems = remember { mutableStateListOf<LocationWeather>() }
 
+    val reorderState = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            mockLocations.apply {
+                val item = removeAt(from.index)
+                add(if (from.index < to.index) to.index - 1 else to.index, item)
+            }
+        }
+    )
+
     Scaffold(
         bottomBar = {
             Row(
@@ -59,9 +72,7 @@ fun CardListScreenMockup() {
             ) {
                 OutlinedButton(
                     onClick = {
-                        if (isSelectionMode) {
-                            selectedItems.clear()
-                        }
+                        if (isSelectionMode) selectedItems.clear()
                         isSelectionMode = !isSelectionMode
                     },
                     modifier = Modifier.weight(1f),
@@ -84,7 +95,7 @@ fun CardListScreenMockup() {
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .alpha(0.5f), // 반투명
+                            .alpha(0.5f),
                         border = BorderStroke(1.dp, Color.Red),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -112,22 +123,29 @@ fun CardListScreenMockup() {
         }
     ) { innerPadding ->
         LazyColumn(
-            contentPadding = innerPadding,
+            state = reorderState.listState,
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(16.dp),
+                .padding(16.dp)
+                .reorderable(reorderState)
+                .detectReorderAfterLongPress(reorderState),
+            contentPadding = innerPadding,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(mockLocations) { location ->
-                LocationWeatherCard(
-                    data = location,
-                    isSelectionMode = isSelectionMode,
-                    isChecked = selectedItems.contains(location),
-                    onCheckChange = { checked ->
-                        if (checked) selectedItems.add(location) else selectedItems.remove(location)
-                    }
-                )
+            items(mockLocations, key = { it.name }) { location ->
+                ReorderableItem(reorderState, key = location.name) { isDragging ->
+                    val elevation = if (isDragging) 4.dp else 0.dp
+                    LocationWeatherCard(
+                        data = location,
+                        isSelectionMode = isSelectionMode,
+                        isChecked = selectedItems.contains(location),
+                        onCheckChange = { checked ->
+                            if (checked) selectedItems.add(location) else selectedItems.remove(location)
+                        },
+                        modifier = Modifier.shadow(elevation)
+                    )
+                }
             }
         }
     }
@@ -138,10 +156,11 @@ fun LocationWeatherCard(
     data: LocationWeather,
     isSelectionMode: Boolean,
     isChecked: Boolean,
-    onCheckChange: (Boolean) -> Unit
+    onCheckChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         color = Color.White,
         border = BorderStroke(1.dp, Color.Black),
@@ -164,11 +183,7 @@ fun LocationWeatherCard(
                 }
 
                 Column {
-                    Text(
-                        text = data.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = data.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Text(
                         text = "위도: ${data.lat}, 경도: ${data.lng}",
                         fontSize = 12.sp,
@@ -199,6 +214,8 @@ data class LocationWeather(
     val maxTemp: Int,
     val minTemp: Int
 )
+
+
 
 @Preview
 @Composable
