@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.foundation:foundation")
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("com.google.android.libraries.places:places:3.3.0")
     implementation("androidx.room:room-runtime:2.6.1")
