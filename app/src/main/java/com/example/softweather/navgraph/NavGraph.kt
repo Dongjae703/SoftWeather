@@ -1,5 +1,6 @@
 package com.example.softweather.navgraph
 
+import android.net.Uri
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -23,7 +24,8 @@ fun NavGraph(navController: NavHostController) {
                 navController.navigate(
                     Routes.MainScreen.createRoute(
                         lat.toString(),
-                        lon.toString()
+                        lon.toString(),
+                        "현재 위치"
                     )
                 ) {
                     popUpTo("splash") { inclusive = true }
@@ -35,14 +37,16 @@ fun NavGraph(navController: NavHostController) {
             route = Routes.MainScreen.route,
             arguments = listOf(
                 navArgument("lat") { type = NavType.StringType },
-                navArgument("lon") { type = NavType.StringType }
+                navArgument("lon") { type = NavType.StringType },
+                navArgument("locationName"){ type = NavType.StringType}
             )
         ) { backStackEntry ->
             val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
             val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull()
-            if (lat != null && lon != null) {
+            val locationName = backStackEntry.arguments?.getString("locationName")
+            if (lat != null && lon != null && locationName != null) {
 
-                MainScreen("현재 위치", lat, lon, navController)
+                MainScreen(locationName ,lat, lon, navController)
             }
         }
         composable(
@@ -56,8 +60,9 @@ fun NavGraph(navController: NavHostController) {
             val lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull()
             if (lat != null && lon != null) {
                 MapScreen(lat, lon, { newLat, newLon ->
-                    navController.navigate("mainScreen/${newLat}/${newLon}") {
-                        popUpTo("mainScreen/{lat}/{lon}") { inclusive = true }
+                    val encodedLocation = Uri.encode("현재 위치")
+                    navController.navigate(Routes.MainScreen.createRoute(newLat.toString(),newLon.toString(),encodedLocation)) {
+                        popUpTo(Routes.MainScreen.route) { inclusive = true }
                     }
                 }, navController)
 

@@ -97,7 +97,8 @@ fun CitySearchScreen(navController: NavController) {
                                 navController.navigate(
                                     Routes.MainScreen.createRoute(
                                         latLng.latitude.toString(),
-                                        latLng.longitude.toString()
+                                        latLng.longitude.toString(),
+                                        place.name?:prediction.getFullText(null).toString()
                                     )
                                 )
                             }

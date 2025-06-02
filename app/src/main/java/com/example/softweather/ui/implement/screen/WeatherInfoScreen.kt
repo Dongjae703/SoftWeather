@@ -166,16 +166,16 @@ fun WeatherInfoScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 240.dp)
-                        .weight(0.3f),
+                        .heightIn(min = 300.dp)
+                        .weight(0.35f),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(date, fontSize = 22.sp, fontWeight = FontWeight.Bold, fontFamily = NotoSansKR)
                     Text(location, fontSize = 18.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
-                    Text("${temperature}°", fontSize = 48.sp, fontWeight = FontWeight.Bold, fontFamily = NotoSansKR)
-                    Text(WeatherIconGetter(weatherCodeNow), fontSize = 36.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
-                    Text(WeatherCodeConverter(weatherCodeNow), fontSize = 24.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
+                    Text("${temperature}°", fontSize = 36.sp, fontWeight = FontWeight.Bold, fontFamily = NotoSansKR)
+                    Text(WeatherIconGetter(weatherCodeNow), fontSize = 24.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
+                    Text(WeatherCodeConverter(weatherCodeNow), fontSize = 18.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
                     Text("최고 : ${tempMaxList[0]}°  최저 : ${tempMinList[0]}°", fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
                 }
 
@@ -207,7 +207,7 @@ fun WeatherInfoScreen(
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp) // weight 대신 고정 height
+                        .height(100.dp) // weight 대신 고정 height
                         .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
@@ -222,7 +222,7 @@ fun WeatherInfoScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(0.35f),
+                        .weight(0.3f),
                     verticalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
                     itemsIndexed(dailyList) { index, daily ->
@@ -276,7 +276,7 @@ fun WeatherHourItem(time: String, weatherCode: Int, temperature: Double) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(DateConverter(time, useHour = true), fontSize = 13.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(WeatherIconGetter(weatherCode), fontSize = 24.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
+        Text(WeatherIconGetter(weatherCode), fontSize = 18.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
         Spacer(modifier = Modifier.height(2.dp))
         Text(WeatherCodeConverter(weatherCode), fontSize = 12.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
         Spacer(modifier = Modifier.height(2.dp))
