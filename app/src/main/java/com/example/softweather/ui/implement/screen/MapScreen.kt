@@ -2,7 +2,8 @@ package com.example.softweather.ui.implement.screen
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.location.Geocoder
+import android.net.Uri.encode
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +47,12 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONArray
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +68,8 @@ fun MapScreen(
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
-    var locationName by remember { mutableStateOf("선택 위치") }
+    var locationName by remember { mutableStateOf("현 위치") }
+    var isClick by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(lat, lon), 15f)
@@ -73,15 +80,15 @@ fun MapScreen(
     }
 
     LaunchedEffect(selectedLatLng) {
-        val geocoder = Geocoder(context, Locale.getDefault())
-        val addresses = geocoder.getFromLocation(
-            selectedLatLng.latitude,
-            selectedLatLng.longitude,
-            1
-        )
-        if (!addresses.isNullOrEmpty()) {
-            locationName = addresses[0].featureName
-                ?: addresses[0].subLocality ?: addresses[0].locality ?: "알 수 없음"
+        if (isClick) {
+            locationName = getGeoPlaceName(
+                lat = selectedLatLng.latitude,
+                lon = selectedLatLng.longitude,
+                apiKey = "AIzaSyBezEgctIzXiH2u5bd5m79fzSOinpf4IvA"
+            )
+            Log.i("mapscreen", locationName)
+        }else{
+            locationName = "현재 위치"
         }
     }
 
@@ -97,7 +104,7 @@ fun MapScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "현재 좌표: ${selectedLatLng.latitude}, ${selectedLatLng.longitude}",
+                            text = locationName,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
@@ -136,6 +143,7 @@ fun MapScreen(
                                 }
                             }
                         }
+                        isClick = false
                     },
                     border = BorderStroke(1.dp, Color.Black),
                     shape = RoundedCornerShape(4.dp),
@@ -152,10 +160,10 @@ fun MapScreen(
                     onClick = {
                         onConfirm(selectedLatLng.latitude, selectedLatLng.longitude)
 
-                        val lat = selectedLatLng.latitude.toString()
-                        val lon = selectedLatLng.longitude.toString()
-
-                        navController.navigate(Routes.MainScreen.createRoute(lat, lon)) {
+                        val selectedlat = selectedLatLng.latitude.toString()
+                        val selectedlon = selectedLatLng.longitude.toString()
+                        val encodedLocation = encode(locationName.ifBlank { "현재 위치" })
+                        navController.navigate(Routes.MainScreen.createRoute(selectedlat, selectedlon, encodedLocation)) {
                             popUpTo(Routes.MainScreen.route) { inclusive = false }
                             launchSingleTop = true
                         }
@@ -191,6 +199,7 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 onMapClick = { latLng ->
                     selectedLatLng = latLng
+                    isClick = true
                 }   // 터치 위치로 Marker 이동
             ){
                 Marker(
@@ -201,4 +210,87 @@ fun MapScreen(
         }
     }
 }
+
+//suspend fun getNearbyPlaceId(context: Context, latLng: LatLng, apiKey: String): String =
+//    withContext(Dispatchers.IO) {
+//        val url =
+//            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latLng.latitude},${latLng.longitude}&radius=50&key=$apiKey"
+//        val request = Request.Builder().url(url).build()
+//        val client = OkHttpClient()
+//
+//        client.newCall(request).execute().use { response ->
+//            val responseBody = response.body?.string()
+//            val jsonObject = JSONObject(responseBody ?: "")
+//            val results = jsonObject.getJSONArray("results")
+//            if (results.length() > 0) {
+//                results.getJSONObject(0).getString("place_id")
+//            } else {
+//                throw Exception("근처 장소 없음")
+//            }
+//        }
+//    }
+//
+private fun JSONArray.containsType(typeName: String): Boolean {
+    for (i in 0 until length()) {
+        if (getString(i) == typeName) return true
+    }
+    return false
+}
+
+// 실제 장소 이름 반환 함수
+suspend fun getGeoPlaceName(lat: Double, lon: Double, apiKey: String): String =
+    withContext(Dispatchers.IO) {
+        val url = "https://maps.googleapis.com/maps/api/geocode/json" +
+                "?latlng=$lat,$lon&language=ko&key=$apiKey"
+
+        val request = Request.Builder().url(url).build()
+        val client = OkHttpClient()
+
+        client.newCall(request).execute().use { response ->
+            val responseBody = response.body?.string() ?: throw Exception("응답 없음")
+            val json = JSONObject(responseBody)
+            val results = json.getJSONArray("results")
+            if (results.length() == 0) throw Exception("주소 결과 없음")
+
+            val components = results.getJSONObject(0).getJSONArray("address_components")
+
+            var geoCountry = ""
+            var geoLevel1 = ""       // 시/도
+            var geoLevel2 = ""       // 구/군
+            var geoSubLocal = ""     // 동/면
+            var geoRoute = ""        // 도로명
+
+            for (i in 0 until components.length()) {
+                val comp = components.getJSONObject(i)
+                val types = comp.getJSONArray("types")
+
+                when {
+                    types.containsType("country") ->
+                        geoCountry = comp.getString("long_name")
+
+                    types.containsType("administrative_area_level_1") ->
+                        geoLevel1 = comp.getString("long_name")
+
+                    types.containsType("administrative_area_level_2") ->
+                        geoLevel2 = comp.getString("long_name")
+
+                    types.containsType("sublocality") || types.containsType("sublocality_level_1") ->
+                        geoSubLocal = comp.getString("long_name")
+
+                    types.containsType("route") ->
+                        geoRoute = comp.getString("long_name")
+                }
+            }
+            Log.i("api", "${geoCountry}, ${geoLevel1}, ${geoLevel2}, ${geoSubLocal}, ${geoRoute}")
+            return@withContext if (geoCountry == "대한민국" || geoCountry == "South Korea" || geoCountry == "Korea") {
+                listOf(geoLevel1, geoLevel2, geoSubLocal, geoRoute)
+                    .filter { it.isNotEmpty() }
+                    .joinToString(" ")
+            } else {
+                listOf(geoLevel1, geoLevel2)
+                    .filter { it.isNotEmpty() }
+                    .joinToString(", ")
+            }
+        }
+    }
 

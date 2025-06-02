@@ -9,23 +9,20 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
-import com.example.softweather.model.LocationHolder
 import com.example.softweather.model.LocationHolder.lat
+import com.example.softweather.model.LocationHolder.locationName
 import com.example.softweather.model.LocationHolder.lon
 import com.example.softweather.model.Routes
 
 @Composable
 fun NavigationBarTemplete(selectedTab:String,onTabSelected : (String) -> Unit,currentRoute:String,navController:NavController) {
-    lat = LocationHolder.lat
-    lon = LocationHolder.lon
-
 
     NavigationBar(containerColor = Color.White) {
         BottomBarItem("홈", Icons.Outlined.Home, selectedTab == "홈") {
             onTabSelected("홈")
             if (currentRoute != Routes.MainScreen.route) {
                 navController.navigate(
-                    Routes.MainScreen.createRoute(lat.toString(), lon.toString())
+                    Routes.MainScreen.createRoute(lat.toString(), lon.toString(), locationName)
                 ) {
                     popUpTo(Routes.MainScreen.route) { inclusive = false }
                     launchSingleTop = true

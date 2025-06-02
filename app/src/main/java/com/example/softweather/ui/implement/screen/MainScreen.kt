@@ -29,20 +29,24 @@ import androidx.navigation.NavController
 import com.example.softweather.model.LocationHolder
 import com.example.softweather.model.Routes
 import com.example.softweather.ui.implement.tool.NavigationBarTemplete
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(lname:String, lat: Double, lon: Double, navController: NavController) {
+fun MainScreen(lname:String = "현재 위치", lat: Double, lon: Double, navController: NavController) {
     val currentRoute = Routes.MainScreen.route
     var selectedTab by remember { mutableStateOf("홈") }
     val now = LocalDate.now(ZoneId.of("Asia/Seoul"))
     val targetTimeStr = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    val decodedName = URLDecoder.decode(lname, StandardCharsets.UTF_8.toString())
+
+    LocationHolder.locationName = decodedName
     LocationHolder.lat = lat
     LocationHolder.lon = lon
-
 //    val context = LocalContext.current
 //
 //
@@ -108,7 +112,7 @@ fun MainScreen(lname:String, lat: Double, lon: Double, navController: NavControl
                 color = MaterialTheme.colorScheme.outlineVariant // 연회색
             )
 
-            WeatherInfoScreen(targetTimeStr, lname, lat, lon)
+            WeatherInfoScreen(targetTimeStr, decodedName, lat, lon)
 
 
         }
