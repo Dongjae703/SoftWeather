@@ -44,6 +44,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.libraries.places:places:4.3.1")
     implementation("androidx.room:room-runtime:2.7.1")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation(libs.androidx.work.runtime.ktx)
     ksp("androidx.room:room-compiler:2.7.1")
     implementation("androidx.room:room-ktx:2.7.1")
