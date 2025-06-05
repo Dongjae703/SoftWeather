@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.softweather.model.daily.DailyPastWeatherApi
+import com.example.softweather.model.daily.DailyWeatherResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -46,17 +47,14 @@ class DailyPastWeatherViewModel(
                 Log.e("DailyPastWeatherVM", "✅ 응답 성공, daily=${response.daily}")
 
                 val dailyWeather = response.daily
-                if (dailyWeather != null) {
-                    _temperature_max.value = dailyWeather.temperature_2m_max
-                    _temperature_min.value = dailyWeather.temperature_2m_min
-                    _precipitation_sum.value = dailyWeather.precipitation_sum
-                    _sunrise.value = dailyWeather.sunrise
-                    _sunset.value = dailyWeather.sunset
-                    _windspeed_max.value = dailyWeather.windspeed_10m_max
-                    _weatherCode.value = dailyWeather.weathercode
-                } else {
-                    Log.e("DailyPastWeatherVM", "⚠️ dailyWeather == null")
-                }
+                _temperature_max.value = dailyWeather.temperature_2m_max
+                _temperature_min.value = dailyWeather.temperature_2m_min
+                _precipitation_sum.value = dailyWeather.precipitation_sum
+                _sunrise.value = dailyWeather.sunrise
+                _sunset.value = dailyWeather.sunset
+                _windspeed_max.value = dailyWeather.windspeed_10m_max
+                _weatherCode.value = dailyWeather.weathercode
+
 
             } catch (e: retrofit2.HttpException) {
                 Log.e("DailyPastWeatherVM", "❌ HTTP 오류: ${e.code()} ${e.message()}")
@@ -65,5 +63,15 @@ class DailyPastWeatherViewModel(
                 Log.e("DailyPastWeatherVM", "❌ 예외 발생: ${e.localizedMessage}")
             }
         }
+    }
+
+    fun setData(data: DailyWeatherResponse) {
+        _temperature_max.value = data.daily.temperature_2m_max
+        _temperature_min.value = data.daily.temperature_2m_min
+        _precipitation_sum.value = data.daily.precipitation_sum
+        _sunrise.value = data.daily.sunrise
+        _sunset.value = data.daily.sunset
+        _windspeed_max.value = data.daily.windspeed_10m_max
+        _weatherCode.value = data.daily.weathercode
     }
 }

@@ -35,17 +35,20 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.10"
+    }
     buildFeatures {
         compose = true
     }
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.11.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.libraries.places:places:4.3.1")
     implementation("androidx.room:room-runtime:2.7.1")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
+    implementation("sh.calvin.reorderable:reorderable:2.4.3")
     implementation(libs.androidx.work.runtime.ktx)
     ksp("androidx.room:room-compiler:2.7.1")
     implementation("androidx.room:room-ktx:2.7.1")
@@ -58,7 +61,6 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
-    implementation("androidx.compose.material3:material3")
     implementation("com.google.maps.android:maps-compose:4.3.3")
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation(libs.androidx.core.ktx)

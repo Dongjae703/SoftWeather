@@ -5,8 +5,8 @@ data class HourlyWeatherResponse(
 )
 
 data class HourlyData(
-    val time: List<String>,
-    val temperature_2m: List<Double>,
-    val relative_humidity_2m: List<Int>,
-    val weather_code : List<Int>
+    var time: List<String>,
+    var temperature_2m: List<Double>,
+    var relative_humidity_2m: List<Int>,
+    var weather_code : List<Int>
 )

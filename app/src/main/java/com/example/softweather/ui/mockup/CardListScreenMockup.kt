@@ -1,7 +1,6 @@
 package com.example.softweather.ui.mockup
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -34,10 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 
 @Composable
@@ -53,14 +51,10 @@ fun CardListScreenMockup() {
     var isSelectionMode by remember { mutableStateOf(false) }
     val selectedItems = remember { mutableStateListOf<LocationWeather>() }
 
-    val reorderState = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            mockLocations.apply {
-                val item = removeAt(from.index)
-                add(if (from.index < to.index) to.index - 1 else to.index, item)
-            }
-        }
-    )
+    val listState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
+        mockLocations.move(from.index, to.index)
+    }
 
     Scaffold(
         bottomBar = {
@@ -123,18 +117,15 @@ fun CardListScreenMockup() {
         }
     ) { innerPadding ->
         LazyColumn(
-            state = reorderState.listState,
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
-                .padding(16.dp)
-                .reorderable(reorderState)
-                .detectReorderAfterLongPress(reorderState),
+                .padding(16.dp),
             contentPadding = innerPadding,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(mockLocations, key = { it.name }) { location ->
-                ReorderableItem(reorderState, key = location.name) { isDragging ->
+                ReorderableItem(reorderableState, key = location.name) { isDragging ->
                     val elevation = if (isDragging) 4.dp else 0.dp
                     LocationWeatherCard(
                         data = location,
@@ -143,12 +134,20 @@ fun CardListScreenMockup() {
                         onCheckChange = { checked ->
                             if (checked) selectedItems.add(location) else selectedItems.remove(location)
                         },
-                        modifier = Modifier.shadow(elevation)
+                        modifier = Modifier
+                            .shadow(elevation)
+                            .draggableHandle()
                     )
                 }
             }
         }
     }
+}
+
+fun <T> MutableList<T>.move(from: Int, to: Int) {
+    if (from == to) return
+    val item = removeAt(from)
+    add(if (from < to) to - 1 else to, item)
 }
 
 @Composable

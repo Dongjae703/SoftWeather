@@ -15,7 +15,6 @@ import com.example.softweather.ui.theme.GurumeMeguriTheme
 import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
-    private val LOCATION_PERMISSION_REQUEST_CODE = 100
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -28,7 +27,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavGraph(navController)
 //            MainScreenMockup()
-//            SearchScreenMockup()
+//            PastScreen(navController)
 //            ScheduleScreenMockup()
 //            PastScreenMockup()
 //            GoogleMapScreenMockup()

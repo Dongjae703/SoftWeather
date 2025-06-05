@@ -3,6 +3,7 @@ package com.example.softweather.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.softweather.model.hourly.HourlyPastWeatherApi
+import com.example.softweather.model.hourly.HourlyWeatherResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -30,5 +31,11 @@ class HourlyPastWeatherViewModel(private val api: HourlyPastWeatherApi) : ViewMo
                 // Handle error
             }
         }
+    }
+    fun setData(data: HourlyWeatherResponse) {
+        _timeList.value = data.hourly.time
+        _temperature.value = data.hourly.temperature_2m
+        _humidity.value = data.hourly.relative_humidity_2m
+        _weatherCode.value = data.hourly.weather_code
     }
 }

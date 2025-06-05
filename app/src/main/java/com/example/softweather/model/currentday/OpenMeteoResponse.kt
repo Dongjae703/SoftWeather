@@ -4,7 +4,7 @@ import com.squareup.moshi.Json
 
 data class OpenMeteoResponse(
     @Json(name = "current_weather")
-    val currentWeather: CurrentWeather?
+    val currentWeather: CurrentWeather
 )
 
 data class CurrentWeather(
