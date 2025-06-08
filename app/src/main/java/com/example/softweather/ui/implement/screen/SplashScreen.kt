@@ -116,7 +116,7 @@ fun SplashScreen(onPermissionGranted: (Double, Double) -> Unit) {
                 Button(onClick = {
                     fineLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                 }, colors = ButtonColors(Color.White,Color.White,Color.White,Color.White)) {
-                    Text("위치 권한 요청")
+                    Text("위치 권한 요청", color = Color.Black)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -125,7 +125,7 @@ fun SplashScreen(onPermissionGranted: (Double, Double) -> Unit) {
                 Button(onClick = {
                     notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }, colors = ButtonColors(Color.White,Color.White,Color.White,Color.White)) {
-                    Text("알림 권한 요청")
+                    Text("알림 권한 요청", color = Color.Black)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
