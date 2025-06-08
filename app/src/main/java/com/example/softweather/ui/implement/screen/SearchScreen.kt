@@ -148,7 +148,7 @@ fun SearchScreen(navController: NavController) {
                                                 lon = latLng.longitude.toString()
                                             )
 
-                                            dbViewModel.insertLocationIfNotDuplicate(location) { inserted ->
+                                            dbViewModel.insertLocationIfNotDuplicateSorted(location) { inserted ->
                                                 if (inserted) {
                                                     Toast.makeText(context, "$name 추가됨", Toast.LENGTH_SHORT).show()
                                                 } else {
@@ -190,7 +190,8 @@ fun SearchScreen(navController: NavController) {
             }
             WeatherCardScreen(
                 date = LocalDate.now(),
-                isPast = false
+                isPast = false,
+                navController = navController
             )
         }
     }

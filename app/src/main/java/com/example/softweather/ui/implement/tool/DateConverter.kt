@@ -1,3 +1,4 @@
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -9,7 +10,13 @@ fun DateConverter(
     useMin: Boolean = false
 ): String {
     return try {
-        val parsed = LocalDateTime.parse(date)
+        val parsed : LocalDateTime
+        if(date.length<=10) {
+            parsed = LocalDate.parse(date).atStartOfDay()
+        }
+        else {
+            parsed = LocalDateTime.parse(date)
+        }
         val pattern = StringBuilder()
 
         if (useYear) pattern.append("yyyy년")

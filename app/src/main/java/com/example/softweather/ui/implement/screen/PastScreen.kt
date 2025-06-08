@@ -107,7 +107,7 @@ fun PastScreen(navController: NavController) {
                         Text("입력 형식 오류")
                     }
                 }else{
-                    WeatherCardScreen(parsingDate,true)
+                    WeatherCardScreen(parsingDate,true,navController)
                 }
             }
 
