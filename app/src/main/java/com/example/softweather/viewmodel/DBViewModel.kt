@@ -8,6 +8,7 @@ import com.example.softweather.database.AppDatabase
 import com.example.softweather.database.LocationDB
 import com.example.softweather.database.ScheduleDB
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class DBViewModel(application: Application) : AndroidViewModel(application) {
@@ -43,6 +44,36 @@ class DBViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+//    fun insertLocationIfNotDuplicate(location: LocationDB, onInserted: (Boolean) -> Unit) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val existing = locationDao.getLocationByName(location.l_name)
+//            if (existing == null) {
+//                locationDao.insert(location)
+//                withContext(Dispatchers.Main) {
+//                    onInserted(true)
+//                } // 성공적으로 삽입됨
+//            } else {
+//                withContext(Dispatchers.Main) {
+//                    onInserted(false)
+//                } // 이미 존재함
+//            }
+//        }
+//    }
+
+    fun insertLocationIfNotDuplicateSorted(location: LocationDB, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val existing = locationDao.getLocationByName(location.l_name)
+            if (existing == null) {
+                val maxOrder = locationDao.getMaxSortOrder() ?: 0
+                locationDao.insert(location.copy(sortOrder = maxOrder + 1))
+                onResult(true)
+            } else {
+                onResult(false)
+            }
+        }
+    }
+
+
     // 위치 전부 가져오기
     fun loadAllLocations(onResult: (List<LocationDB>) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -52,24 +83,50 @@ class DBViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    fun getLocationById(onResult: (List<LocationDB>) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val result = locationDao.getID()
-            onResult(result)
-        }
-    }
+//    fun getLocationById(onResult: (List<LocationDB>) -> Unit) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val result = locationDao.getID()
+//            onResult(result)
+//        }
+//    }
 
-    fun getAllLocationsSorted(onResult: (List<LocationDB>) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val result = locationDao.getAllSorted()
-            onResult(result)
-        }
-    }
+//    fun getAllLocationsSorted(onResult: (List<LocationDB>) -> Unit) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val result = locationDao.getAllSorted()
+//            onResult(result)
+//        }
+//    }
 
-    fun deleteLocationById(id: Int, onDeleted: () -> Unit) {
+    fun deleteLocationById(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             locationDao.deleteLocationById(id)
-            onDeleted()
+        }
+    }
+
+    fun deleteLocations(locations: List<LocationDB>) {
+        viewModelScope.launch {
+            locations.forEach {
+                locationDao.deleteLocationById(it.l_id)
+            }
+        }
+    }
+
+//    val locationListFlow: StateFlow<List<LocationDB>> =
+//        locationDao.getAllSortedFlow()
+//            .stateIn(
+//                scope = viewModelScope,
+//                started = SharingStarted.WhileSubscribed(5000),
+//                initialValue = emptyList()
+//            )
+    val locationListFlow: Flow<List<LocationDB>> = locationDao.getAllSortedFlow()
+
+
+    fun updateSortOrder(newList: List<LocationDB>) {
+        viewModelScope.launch {
+            newList.forEachIndexed { index, loc ->
+                val descendingOrder = newList.size - index
+                locationDao.updateSortOrder(loc.l_id, order = descendingOrder)
+            }
         }
     }
 }

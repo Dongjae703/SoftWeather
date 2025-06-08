@@ -16,10 +16,12 @@ sealed class Routes(val route: String) {
     }
 
     object SearchScreen : Routes("searchScreen")
-    object SceduleScreen : Routes("sceduleScreen")
+    object ScheduleScreen : Routes("sceduleScreen")
     object PastScreen : Routes("pastScreen")
 
 
     object MapScreen : Routes("map/{lat}/{lon}")
+
+    object CardListScreen : Routes("cardList")
 
 }

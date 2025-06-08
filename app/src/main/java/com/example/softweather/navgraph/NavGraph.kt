@@ -1,5 +1,6 @@
 package com.example.softweather.navgraph
 
+import SplashScreen
 import android.net.Uri
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,12 +10,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.softweather.model.Routes
+import com.example.softweather.ui.implement.screen.CardListScreen
 import com.example.softweather.ui.implement.screen.MainScreen
 import com.example.softweather.ui.implement.screen.MapScreen
 import com.example.softweather.ui.implement.screen.PastScreen
 import com.example.softweather.ui.implement.screen.ScheduleScreen
 import com.example.softweather.ui.implement.screen.SearchScreen
-import com.example.softweather.ui.implement.screen.SplashScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -73,11 +74,15 @@ fun NavGraph(navController: NavHostController) {
         composable(Routes.SearchScreen.route) {
             SearchScreen(navController)
         }
-        composable(Routes.SceduleScreen.route){
+        composable(Routes.ScheduleScreen.route){
             ScheduleScreen(navController)
         }
         composable(Routes.PastScreen.route){
             PastScreen(navController)
+        }
+
+        composable(Routes.CardListScreen.route){
+            CardListScreen(navController)
         }
     }
 

@@ -16,33 +16,33 @@ object RetrofitInstance {
         .add(KotlinJsonAdapterFactory())
         .build()
 
-    private val nominatimClient = OkHttpClient.Builder()
-        .addInterceptor { chain ->
-            val request = chain.request().newBuilder()
-                .header("User-Agent", "MyWeatherApp/1.0")
-                .build()
-            chain.proceed(request)
-        }
-        .build()
+//    private val nominatimClient = OkHttpClient.Builder()
+//        .addInterceptor { chain ->
+//            val request = chain.request().newBuilder()
+//                .header("User-Agent", "MyWeatherApp/1.0")
+//                .build()
+//            chain.proceed(request)
+//        }
+//        .build()
 
     private val defaultClient = OkHttpClient.Builder().build()
-
-    val nominatimApi: NominatimService by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://nominatim.openstreetmap.org/")
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(nominatimClient)
-            .build()
-            .create(NominatimService::class.java)
-    }
-    val googlePlaceApi: NominatimService by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://maps.googleapis.com/")
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(nominatimClient)
-            .build()
-            .create(NominatimService::class.java)
-    }
+//
+//    val nominatimApi: NominatimService by lazy {
+//        Retrofit.Builder()
+//            .baseUrl("https://nominatim.openstreetmap.org/")
+//            .addConverterFactory(MoshiConverterFactory.create(moshi))
+//            .client(nominatimClient)
+//            .build()
+//            .create(NominatimService::class.java)
+//    }
+//    val googlePlaceApi: NominatimService by lazy {
+//        Retrofit.Builder()
+//            .baseUrl("https://maps.googleapis.com/")
+//            .addConverterFactory(MoshiConverterFactory.create(moshi))
+//            .client(nominatimClient)
+//            .build()
+//            .create(NominatimService::class.java)
+//    }
 
     val openMeteoApi: OpenMeteoApi by lazy {
         Retrofit.Builder()
@@ -64,7 +64,7 @@ object RetrofitInstance {
 
     val hourlyPastWeatherApi: HourlyPastWeatherApi by lazy {
         Retrofit.Builder()
-            .baseUrl("https://api.open-meteo.com/v1/era5/")
+            .baseUrl("https://archive-api.open-meteo.com/v1/era5/")
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(defaultClient)
             .build()

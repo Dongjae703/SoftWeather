@@ -40,8 +40,8 @@ fun NavigationBarTemplete(selectedTab:String,onTabSelected : (String) -> Unit,cu
         }
         BottomBarItem("일정", Icons.Outlined.Event, selectedTab == "일정") {
             onTabSelected("일정")
-            if (currentRoute != Routes.SceduleScreen.route) {
-                navController.navigate(Routes.SceduleScreen.route){
+            if (currentRoute != Routes.ScheduleScreen.route) {
+                navController.navigate(Routes.ScheduleScreen.route){
                     popUpTo(Routes.MainScreen.route) { inclusive = false }
                     launchSingleTop = true
                 }

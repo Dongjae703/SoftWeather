@@ -1,5 +1,6 @@
-package com.example.softweather.ui.mockup
+package com.example.softweather.ui.implement.screen
 
+import android.app.Application
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,41 +21,55 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.softweather.database.LocationDB
+import com.example.softweather.model.WeatherUIState
+import com.example.softweather.ui.implement.tool.WeatherCodeConverter
+import com.example.softweather.ui.implement.tool.WeatherIconGetter
+import com.example.softweather.viewmodel.DBViewModel
+import com.example.softweather.viewmodel.WeatherRepoViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
-
+import java.time.LocalDate
 
 @Composable
-fun CardListScreenMockup() {
-    val mockLocations = remember {
-        mutableStateListOf(
-            LocationWeather("건국대학교", 37.5404, 127.0796, "☀️", "맑음", 26, 17),
-            LocationWeather("혜화역", 37.5822, 127.0010, "🌥️", "흐림", 24, 18),
-            LocationWeather("금돼지식당", 37.5593, 126.9930, "🌧️", "비", 22, 16)
-        )
-    }
-
+fun CardListScreen(navController: NavController) {
+    val context = LocalContext.current
+    val dbViewModel: DBViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory(context.applicationContext as Application)
+    )
+    val weatherRepoVM: WeatherRepoViewModel = viewModel()
+    val locations by dbViewModel.locationListFlow.collectAsState(emptyList())
+    val today = remember { LocalDate.now().toString() }
+    val mutableLocations = remember(locations) { locations.toMutableStateList() }
     var isSelectionMode by remember { mutableStateOf(false) }
-    val selectedItems = remember { mutableStateListOf<LocationWeather>() }
-
+    val selectedItems = remember { mutableStateListOf<LocationDB>() }
     val listState = rememberLazyListState()
-    val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
-        mockLocations.move(from.index, to.index)
-    }
+    val reorderableState = rememberReorderableLazyListState(
+        lazyListState = listState,
+        onMove = { from, to ->
+            mutableLocations.move(from.index, to.index)
+        }
+    )
 
     Scaffold(
         bottomBar = {
@@ -83,7 +98,8 @@ fun CardListScreenMockup() {
                 if (isSelectionMode) {
                     OutlinedButton(
                         onClick = {
-                            mockLocations.removeAll(selectedItems)
+                            dbViewModel.deleteLocations(selectedItems)
+                            mutableLocations.removeAll(selectedItems)
                             selectedItems.clear()
                             isSelectionMode = false
                         },
@@ -101,7 +117,10 @@ fun CardListScreenMockup() {
                     }
                 } else {
                     OutlinedButton(
-                        onClick = { /* 확인 동작 */ },
+                        onClick = {
+                            dbViewModel.updateSortOrder(mutableLocations)
+                            navController.popBackStack()
+                        },
                         modifier = Modifier.weight(1f),
                         border = BorderStroke(1.dp, Color.Black),
                         shape = RoundedCornerShape(8.dp),
@@ -124,18 +143,57 @@ fun CardListScreenMockup() {
             contentPadding = innerPadding,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(mockLocations, key = { it.name }) { location ->
-                ReorderableItem(reorderableState, key = location.name) { isDragging ->
-                    val elevation = if (isDragging) 4.dp else 0.dp
+            items(mutableLocations, key = { it.l_id }) { loc ->
+                val locationKey = loc.l_id.toString()
+                LaunchedEffect(locationKey) {
+                    weatherRepoVM.loadWeatherData(
+                        lat = loc.lat.toDouble(),
+                        lon = loc.lon.toDouble(),
+                        key = locationKey,
+                        startDate = today,
+                        endDate = today
+                    )
+                }
+
+                val weatherState by weatherRepoVM.getWeatherState(locationKey).collectAsState()
+
+                if (weatherState is WeatherUIState.Loading) return@items
+
+                val (weatherCode, temp, max, min) = when (weatherState) {
+                    is WeatherUIState.Success -> {
+                        val data = weatherState as WeatherUIState.Success
+                        WeatherSummary(
+                            data.current?.currentWeather?.weathercode?:120,
+                            data.current?.currentWeather?.temperature?:99.9,
+                            data.daily.daily.temperature_2m_max.firstOrNull() ?: 0.0,
+                            data.daily.daily.temperature_2m_min.firstOrNull() ?: 0.0,
+                        )
+                    }
+
+                    is WeatherUIState.Error -> WeatherSummary(120, 99.9 , 99.9, 99.9)
+                    else -> WeatherSummary(120, 99.9, 99.9, 99.9)
+                }
+
+                ReorderableItem(reorderableState, key = loc.l_id) { isDragging ->
                     LocationWeatherCard(
-                        data = location,
+                        data = LocationWeather(
+                            name = loc.l_name,
+                            lat = loc.lat,
+                            lng = loc.lon,
+                            weatherIcon = WeatherIconGetter(weatherCode),
+                            weatherDesc = WeatherCodeConverter(weatherCode),
+                            maxTemp = max,
+                            minTemp = min,
+                            l_id = loc.l_id,
+                            currentTemp = temp
+                        ),
                         isSelectionMode = isSelectionMode,
-                        isChecked = selectedItems.contains(location),
+                        isChecked = selectedItems.contains(loc),
                         onCheckChange = { checked ->
-                            if (checked) selectedItems.add(location) else selectedItems.remove(location)
+                            if (checked) selectedItems.add(loc) else selectedItems.remove(loc)
                         },
                         modifier = Modifier
-                            .shadow(elevation)
+                            .shadow(if (isDragging) 4.dp else 0.dp)
                             .draggableHandle()
                     )
                 }
@@ -149,7 +207,6 @@ fun <T> MutableList<T>.move(from: Int, to: Int) {
     val item = removeAt(from)
     add(if (from < to) to - 1 else to, item)
 }
-
 @Composable
 fun LocationWeatherCard(
     data: LocationWeather,
@@ -182,13 +239,18 @@ fun LocationWeatherCard(
                 }
 
                 Column {
-                    Text(text = data.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Row {
+                        Text(text = data.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier= Modifier.width(8.dp))
+                        Text(text = data.currentTemp.toString(), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    }
                     Text(
-                        text = "위도: ${data.lat}, 경도: ${data.lng}",
+                        text = "위도: ${"%.5f".format(data.lat.toDouble())}, 경도: ${"%.5f".format(data.lng.toDouble())}",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
                 }
+
             }
 
             Column(horizontalAlignment = Alignment.End) {
@@ -206,18 +268,19 @@ fun LocationWeatherCard(
 
 data class LocationWeather(
     val name: String,
-    val lat: Double,
-    val lng: Double,
+    val lat: String,
+    val lng: String,
     val weatherIcon: String,
     val weatherDesc: String,
-    val maxTemp: Int,
-    val minTemp: Int
+    val maxTemp: Double,
+    val minTemp: Double,
+    val l_id : Int,
+    val currentTemp : Double
 )
 
-
-
-@Preview
-@Composable
-private fun CardListPrev() {
-    CardListScreenMockup()
-}
+data class WeatherSummary(
+    val weatherCode: Int,
+    val temp: Double,
+    val max: Double,
+    val min: Double
+)
