@@ -8,7 +8,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.softweather.model.permission.requestPermission
 import com.example.softweather.navgraph.NavGraph
 import com.example.softweather.ui.implement.notification.DailySummaryWorker
 import com.example.softweather.ui.implement.notification.ScheduleMonitorWorker
@@ -47,7 +46,6 @@ class MainActivity : ComponentActivity() {
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, "AIzaSyBezEgctIzXiH2u5bd5m79fzSOinpf4IvA")
         }
-        requestPermission(this)
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
