@@ -19,8 +19,8 @@ class PastWeatherRepoViewModel : ViewModel() {
     private val _weatherStates = MutableStateFlow<Map<String, WeatherUIState>>(emptyMap())
 //    val weatherStates: StateFlow<Map<String, WeatherUIState>> = _weatherStates
 
-    val hourlyPastVM = HourlyPastWeatherViewModel(RetrofitInstance.hourlyPastWeatherApi)
-    val dailyPastVM = DailyPastWeatherViewModel(RetrofitInstance.dailyPastWeatherApi)
+    private val hourlyPastVM = HourlyPastWeatherViewModel(RetrofitInstance.hourlyPastWeatherApi)
+    private val dailyPastVM = DailyPastWeatherViewModel(RetrofitInstance.dailyPastWeatherApi)
 
     fun getWeatherState(locationKey: String): StateFlow<WeatherUIState?> {
         return _weatherStates

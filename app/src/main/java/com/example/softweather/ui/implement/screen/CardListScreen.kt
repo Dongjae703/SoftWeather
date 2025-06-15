@@ -50,6 +50,7 @@ import com.example.softweather.viewmodel.WeatherRepoViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun CardListScreen(navController: NavController) {
@@ -59,7 +60,7 @@ fun CardListScreen(navController: NavController) {
     )
     val weatherRepoVM: WeatherRepoViewModel = viewModel()
     val locations by dbViewModel.locationListFlow.collectAsState(emptyList())
-    val today = remember { LocalDate.now().toString() }
+    val today = remember { LocalDate.now(ZoneId.of("Asia/Seoul")).toString() }
     val mutableLocations = remember(locations) { locations.toMutableStateList() }
     var isSelectionMode by remember { mutableStateOf(false) }
     val selectedItems = remember { mutableStateListOf<LocationDB>() }

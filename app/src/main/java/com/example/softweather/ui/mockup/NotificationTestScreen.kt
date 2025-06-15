@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.softweather.ui.implement.notification.DailySummaryWorker.DailySummaryUtil.runSummaryTask
+import com.example.softweather.ui.implement.notification.DailySummaryWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +37,7 @@ fun NotificationTestScreen() {
     ) {
         Button(onClick = {
             CoroutineScope(Dispatchers.IO).launch {
-                val success = runSummaryTask(context)
+                val success = DailySummaryWorker.DailySummaryUtil.runSummaryTask(context)
                 withContext(Dispatchers.Main) {
                     resultText = if (success) "알림 생성 성공" else "알림 생성 실패"
                 }

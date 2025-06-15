@@ -6,8 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.example.softweather.database.AppDatabase
 import com.example.softweather.database.ScheduleDB
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 
 class ScheduleDBViewModel(application: Application) : AndroidViewModel(application) {
     private val db = Room.databaseBuilder(
@@ -18,7 +19,9 @@ class ScheduleDBViewModel(application: Application) : AndroidViewModel(applicati
 
     private val scheduleDao = db.scheduleDAO()
 
-    val scheduleListFlow: Flow<List<ScheduleDB>> = scheduleDao.getAllSorted()
+    val today = LocalDate.now(ZoneId.of("Asia/Seoul")).toString()
+    val scheduleListFlow = scheduleDao.getFutureSchedules(today)
+
 
     fun insertSchedule(schedule: ScheduleDB) {
         viewModelScope.launch {
@@ -26,9 +29,10 @@ class ScheduleDBViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun deleteSchedule(schedule: ScheduleDB) {
+    fun isScheduleDateDuplicate(start: String, end: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            scheduleDao.deleteSchedule(schedule)
+            val existing = scheduleDao.getScheduleByDateRange(start, end)
+            onResult(existing != null)
         }
     }
 

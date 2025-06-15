@@ -63,6 +63,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -98,7 +100,7 @@ fun ScheduleScreen(navController: NavController) {
     val context = LocalContext.current
     val placeClient = remember { Places.createClient(context) }
     var selectedTab by remember { mutableStateOf("일정") }
-    var selectedYM by remember { mutableStateOf(YearMonth.now()) }
+    var selectedYM by remember { mutableStateOf(YearMonth.now(ZoneId.of("Asia/Seoul"))) }
 
     var showAddDialog by remember { mutableStateOf(false) }
     var scheduleTitle by remember { mutableStateOf("") }
@@ -121,7 +123,24 @@ fun ScheduleScreen(navController: NavController) {
         floatingActionButton = {
             if (startDate != null) {
                 FloatingActionButton(
-                    onClick = { showAddDialog = true },
+                    onClick = {
+                        scheduleViewModel.isScheduleDateDuplicate(startDate.toString(), endDate.toString()) { isDuplicate ->
+                            if (isDuplicate) {
+                                Toast.makeText(context, "이미 같은 날짜 범위의 일정이 존재합니다", Toast.LENGTH_SHORT).show()
+                                return@isScheduleDateDuplicate
+                            }
+                            val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                            if (startDate!!.isBefore(today.minusDays(3))) {
+                                Toast.makeText(context, "시작일이 오늘의 3일이상 이전의 일정입니다.", Toast.LENGTH_SHORT).show()
+                                return@isScheduleDateDuplicate
+                            }
+                            if (endDate?.isAfter(startDate!!.plusDays(14L)) == true) {
+                                Toast.makeText(context, "종료일과 시작일이 15일 이상 차이납니다.", Toast.LENGTH_SHORT).show()
+                                return@isScheduleDateDuplicate
+                            }
+                            showAddDialog = true
+                        }
+                    },
                     containerColor = Color.White
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "일정 추가")
@@ -225,6 +244,8 @@ fun ScheduleScreen(navController: NavController) {
                     modifier = Modifier.size(16.dp)
                 )
                 Text(": 종료일", fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("이후 날씨 확인만을 위한 일정입니다.", fontWeight = FontWeight.Medium, fontSize = 10.sp)
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
@@ -491,6 +512,7 @@ fun CalendarGrid(
     onDateSelected: (LocalDate) -> Unit
 ) {
     val days = remember(month) { generateCalendarDates(month) }
+    val boundaryDate = remember { LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(3) }
 
     Column {
         // 요일 헤더
@@ -520,11 +542,21 @@ fun CalendarGrid(
 
                         else -> Color.Transparent
                     }
-
+                    val isBoundary = day == boundaryDate
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .aspectRatio(1f)
+                            .drawBehind {
+                                if (isBoundary) {
+                                    drawLine(
+                                        color = Color.Gray,
+                                        start = Offset(0f, 0f),
+                                        end = Offset(0f, size.height),
+                                        strokeWidth = 4f
+                                    )
+                                }
+                            }
                             .background(backgroundColor)
                             .clickable(enabled = day != null) {
                                 day?.let { onDateSelected(it) }
@@ -868,8 +900,8 @@ fun AddScheduleDialog(
                                         ).show()
                                         onDismiss()
                                     }
+                                    }
                                 }
-                        }
                     }) {
                         Text("확인")
                     }

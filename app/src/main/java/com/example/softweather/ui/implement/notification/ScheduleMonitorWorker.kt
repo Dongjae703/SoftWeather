@@ -14,6 +14,7 @@ import com.example.softweather.database.ScheduleDB
 import com.example.softweather.model.RetrofitInstance.dailyWeatherApi
 import com.example.softweather.ui.implement.tool.IsRainDecider
 import java.time.LocalDate
+import java.time.ZoneId
 
 class ScheduleMonitorWorker(
     appContext: Context,
@@ -27,8 +28,8 @@ class ScheduleMonitorWorker(
             "softweather-db"
         ).build()
         val scheduleDao = db.scheduleDAO()
-        val schedules : List<ScheduleDB> = scheduleDao.getAll() // 📌 suspend fun getAll(): List<ScheduleEntity>
-
+        val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
+        val schedules : List<ScheduleDB> = scheduleDao.getFutureSchedulesSuspend(today.toString())
         if (schedules.isEmpty()) return Result.success()
 
         for (schedule in schedules) {
@@ -36,8 +37,10 @@ class ScheduleMonitorWorker(
             val lon = schedule.lon.toDouble()
             val scheduleStart = LocalDate.parse(schedule.startDate)
             val scheduleEndRaw = LocalDate.parse(schedule.lastDate)
-            val endLimit = LocalDate.now().plusDays(14)
+            val endLimit = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(14)
             val scheduleEnd = minOf(scheduleEndRaw, endLimit)
+
+            if (scheduleStart.isAfter(scheduleEnd)) return Result.success()
 
             val weatherResult = dailyWeatherApi.getDailyForecast(
                 lat = lat,
@@ -53,7 +56,7 @@ class ScheduleMonitorWorker(
 
             if (hasSevere) {
                 sendNotification(
-                    "날씨 주의: ${schedule.title}",
+                    "날씨 주의: ${schedule.title} 일정",
                     "${schedule.startDate} ~ ${schedule.lastDate} 일정 중 비/눈/천둥 예보가 있습니다."
                 )
                 break
