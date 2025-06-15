@@ -1,4 +1,4 @@
-package com.example.softweather.model.permission
+package com.example.softweather.dummy
 
 import android.Manifest
 import android.app.Activity

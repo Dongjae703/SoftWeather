@@ -99,10 +99,16 @@ fun CardListScreen(navController: NavController) {
                 if (isSelectionMode) {
                     OutlinedButton(
                         onClick = {
-                            dbViewModel.deleteLocations(selectedItems)
-                            mutableLocations.removeAll(selectedItems)
+                            val toDelete = selectedItems.toList()
+
+
+                            dbViewModel.updateSortOrder(mutableLocations.toList())
+
                             selectedItems.clear()
                             isSelectionMode = false
+
+                            mutableLocations.removeAll(toDelete)
+                            dbViewModel.deleteLocations(toDelete)
                         },
                         modifier = Modifier
                             .weight(1f)

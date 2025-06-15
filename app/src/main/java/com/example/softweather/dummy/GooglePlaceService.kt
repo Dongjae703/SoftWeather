@@ -1,4 +1,4 @@
-package com.example.softweather.model
+package com.example.softweather.dummy
 
 import retrofit2.http.GET
 import retrofit2.http.Query
