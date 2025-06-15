@@ -12,7 +12,6 @@ import com.example.softweather.model.permission.requestPermission
 import com.example.softweather.navgraph.NavGraph
 import com.example.softweather.ui.implement.notification.DailySummaryWorker
 import com.example.softweather.ui.implement.notification.ScheduleMonitorWorker
-import com.example.softweather.ui.implement.notification.WeatherWorker
 import com.google.android.libraries.places.api.Places
 import java.time.Duration
 import java.time.ZoneId
@@ -22,15 +21,6 @@ import java.util.concurrent.TimeUnit
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val workRequest = PeriodicWorkRequestBuilder<WeatherWorker>(
-            1, TimeUnit.HOURS
-        ).build()
-
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-            "weather_worker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
 
         val dailyRequest = PeriodicWorkRequestBuilder<DailySummaryWorker>(
             1, TimeUnit.DAYS
@@ -72,6 +62,7 @@ class MainActivity : ComponentActivity() {
 //        NotificationMockup()
 //           CardListScreenMockup()
 //            MainScreenMockup(52.0,64.0, navController)
+//            NotificationTestScreen()
         }
 
     }

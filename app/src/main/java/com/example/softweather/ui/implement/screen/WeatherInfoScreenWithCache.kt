@@ -1,12 +1,22 @@
 package com.example.softweather.ui.implement.screen
 
-import DailyTuple
-import HourlyTuple
-import WeatherInfoContentPast
+import DateConverter
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,13 +24,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.softweather.model.WeatherUIState
 import com.example.softweather.model.daily.DailyData
 import com.example.softweather.model.hourly.HourlyData
+import com.example.softweather.ui.implement.font.NotoSansKR
+import com.example.softweather.ui.implement.tool.DayofWeekConverter
+import com.example.softweather.ui.implement.tool.WeatherCodeConverter
+import com.example.softweather.ui.implement.tool.WeatherIconGetter
 import com.example.softweather.viewmodel.PastWeatherRepoViewModel
 import com.example.softweather.viewmodel.WeatherRepoViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -41,11 +61,12 @@ fun WeatherInfoScreenWithCache(
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val targetDate = LocalDate.parse(date, formatter)
-    val endDate = targetDate.plusDays(15L)
-
+    val endDate = targetDate.plusDays(14L)
     LaunchedEffect(locationKey) {
+        Log.d("WeatherVM", "loadWeatherData 호출됨: lat=$lat, lon=$lon, start=$date, end=$endDate")
         weatherRepoVM.loadWeatherData(lat, lon, locationKey, date, endDate.toString())
-        pastRepoVM.loadPastWeather(lat, lon, locationKey, date, endDate.toString())
+        if(isPast)
+            pastRepoVM.loadPastWeather(lat, lon, locationKey, date, endDate.toString())
     }
 
     if (isPast) {
@@ -58,7 +79,7 @@ fun WeatherInfoScreenWithCache(
                 val isAllPast = currentState is WeatherUIState.Error
                 if (isAllPast) {
 
-                    val today = LocalDate.now()
+                    val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
 
                     val mergedDaily = DailyData(
                         time = mutableListOf(),
@@ -85,7 +106,7 @@ fun WeatherInfoScreenWithCache(
                         }
                     }
                     val formatterHour = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
-                    val todayDateTime = LocalDate.now().atStartOfDay()
+                    val todayDateTime = LocalDate.now(ZoneId.of("Asia/Seoul")).atStartOfDay()
 
                     val mergedHourly = HourlyData(
                         time = mutableListOf(),
@@ -134,7 +155,7 @@ fun WeatherInfoScreenWithCache(
                 } else{
                 val future = currentState as WeatherUIState.Success
 
-                val today = LocalDate.now()
+                val today = LocalDate.now(ZoneId.of("Asia/Seoul"))
 
                 val mergedDaily = DailyData(
                     time = mutableListOf(),
@@ -177,7 +198,7 @@ fun WeatherInfoScreenWithCache(
                 }
 
                 val formatterHour = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
-                val todayDateTime = LocalDate.now().atStartOfDay()
+                val todayDateTime = today.atStartOfDay()
 
                 val mergedHourly = HourlyData(
                     time = mutableListOf(),
@@ -296,3 +317,112 @@ data class WeatherMergedModel(
     val hourly: List<HourlyTuple>
 )
 
+@Composable
+fun WeatherDetailRow(label: String, value: String, windDirection: Double = 1080.0) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (windDirection != 1080.0) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowUpward,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .padding(start = 2.dp)
+                        .rotate(windDirection.toFloat()),
+                    tint = Color.Gray
+                )
+            }
+            Text(value, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFamily = NotoSansKR)
+        }
+    }
+}
+
+
+@Composable
+fun WeatherHourItem(time: String, weatherCode: Int, temperature: Double) {
+    Column(modifier = Modifier.width(60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            DateConverter(time, useHour = true),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            WeatherIconGetter(weatherCode),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            WeatherCodeConverter(weatherCode),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = if (temperature != 999.0)"${temperature}°" else "오류",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+    }
+}
+
+@Composable
+fun WeatherDayItem(
+    day: String,
+    weatherCode: Int?,
+    temperatureMin: Double?,
+    temperatureMax: Double?
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth().height(45.dp)
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            DayofWeekConverter(day),
+            modifier = Modifier.width(40.dp),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+        Text(
+            WeatherIconGetter(weatherCode),
+            fontSize = 22.sp,
+            modifier = Modifier.padding(horizontal = 6.dp),
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                WeatherCodeConverter(weatherCode),
+                fontSize = 12.sp,
+                color = Color.Gray,
+                fontWeight = FontWeight.Medium,
+                fontFamily = NotoSansKR
+            )
+        }
+
+
+        Text(
+            "$temperatureMin°/$temperatureMax",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = NotoSansKR
+        )
+    }
+}

@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.softweather.ui.implement.screen.WeatherInfoScreen
 import com.example.softweather.ui.implement.tool.BottomBarItem
 import java.time.LocalDate
 import java.time.ZoneId
@@ -91,7 +90,7 @@ fun MainScreenMockup(lat:Double,lon:Double,navController: NavController) {
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant // 연회색
             )
-            WeatherInfoScreen(targetTimeStr, "현재 위치",lat,lon)
+//            WeatherInfoScreen(targetTimeStr, "현재 위치",lat,lon)
 
         }
     }

@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.example.softweather.model.Routes
 import com.example.softweather.ui.implement.tool.NavigationBarTemplete
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -101,11 +102,18 @@ fun PastScreen(navController: NavController) {
                 val parsingDate = try {
                     LocalDate.parse(searchedDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-                } catch (e: Exception) { LocalDate.now()}
-                if (parsingDate == LocalDate.now()){
+                } catch (e: Exception) { LocalDate.now(ZoneId.of("Asia/Seoul")).plusYears(1000L)}
+                if (parsingDate == LocalDate.now(ZoneId.of("Asia/Seoul")).plusYears(1000L)){
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
                         Text("입력 형식 오류")
                     }
+
+                }else if (parsingDate.isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(15L))||parsingDate.isBefore(LocalDate.parse("1970-01-01",
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")))){
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                        Text("1970년부터 15일 이전까지의 날짜만 입력할 수 있습니다.")
+                    }
+
                 }else{
                     WeatherCardScreen(parsingDate,true,navController)
                 }

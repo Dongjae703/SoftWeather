@@ -1,6 +1,7 @@
 package com.example.softweather.ui.implement.screen
 
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,10 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.softweather.model.LocationHolder
 import com.example.softweather.model.Routes
 import com.example.softweather.ui.implement.tool.NavigationBarTemplete
+import com.example.softweather.viewmodel.PastWeatherRepoViewModel
+import com.example.softweather.viewmodel.WeatherRepoViewModel
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
@@ -42,25 +46,16 @@ fun MainScreen(lname:String = "현재 위치", lat: Double, lon: Double, navCont
     var selectedTab by remember { mutableStateOf("홈") }
     val now = LocalDate.now(ZoneId.of("Asia/Seoul"))
     val targetTimeStr = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-    val decodedName = URLDecoder.decode(lname, StandardCharsets.UTF_8.toString())
-
+    val decodedName = try {
+        URLDecoder.decode(lname, StandardCharsets.UTF_8.toString())
+    } catch (e: Exception) {
+        "지역 이름 오류"
+    }
+    val weatherRepoVM: WeatherRepoViewModel = viewModel()
+    val weatherPastRepoVM: PastWeatherRepoViewModel = viewModel()
     LocationHolder.locationName = decodedName
     LocationHolder.lat = lat
     LocationHolder.lon = lon
-//    val context = LocalContext.current
-//
-//
-//    var locationName by remember { mutableStateOf("현재 위치") }
-//
-//
-//    LaunchedEffect(lat, lon) {
-//        val geocoder = Geocoder(context, Locale.getDefault())
-//        val addresses = geocoder.getFromLocation(lat, lon, 1)
-//        if (!addresses.isNullOrEmpty()) {
-//            locationName = addresses[0].featureName ?: addresses[0].locality ?: "현재 위치"
-//        }
-//
-//    }
 
     Scaffold(
         modifier = Modifier
@@ -111,9 +106,18 @@ fun MainScreen(lname:String = "현재 위치", lat: Double, lon: Double, navCont
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant // 연회색
             )
-
-            WeatherInfoScreen(targetTimeStr, decodedName, lat, lon)
-
+            val locationKey = "%.5f,%.5f".format(lat, lon)
+            Log.d("main","{$locationKey, $decodedName, $lat, $lon, $targetTimeStr}")
+            WeatherInfoScreenWithCache(
+                locationKey,
+                weatherRepoVM,
+                weatherPastRepoVM,
+                decodedName,
+                lat,
+                lon,
+                targetTimeStr,
+                false
+            )
 
         }
     }

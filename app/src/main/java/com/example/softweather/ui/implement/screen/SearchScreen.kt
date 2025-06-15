@@ -45,6 +45,7 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import java.time.LocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +64,7 @@ fun SearchScreen(navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
 
     var selectedTab by remember { mutableStateOf("검색") }
-
+    var selectedPrediction by remember { mutableStateOf<AutocompletePrediction?>(null) }
 
     Scaffold(
         modifier = Modifier.background(Color.White),
@@ -97,6 +98,7 @@ fun SearchScreen(navController: NavController) {
                     onValueChange = {
                         searchText = it
                         l_name = null
+                        selectedPrediction = null
                         if (it.text.isNotBlank()) {
                             val request = FindAutocompletePredictionsRequest.builder()
                                 .setQuery(it.text)
@@ -122,9 +124,11 @@ fun SearchScreen(navController: NavController) {
                     label = { Text("장소 검색") },
                     trailingIcon = {
                         IconButton(onClick = {
-                            val prediction = suggestions.firstOrNull()
-                            val nameToInsert = l_name ?: prediction?.getPrimaryText(null)?.toString()
-
+                            val prediction = selectedPrediction ?: suggestions.firstOrNull()
+                            val fallbackName = prediction?.getPrimaryText(null)?.toString()?.let {
+                                if (it.length <= 10) it else it.take(10) + "…"
+                            }
+                            val nameToInsert = fallbackName
                             if (!nameToInsert.isNullOrBlank() && prediction != null) {
                                 val placeId = prediction.placeId
                                 val placeFields = listOf(
@@ -148,18 +152,23 @@ fun SearchScreen(navController: NavController) {
                                                 lon = latLng.longitude.toString()
                                             )
 
-                                            dbViewModel.insertLocationIfNotDuplicateSorted(location) { inserted ->
-                                                if (inserted) {
-                                                    Toast.makeText(context, "$name 추가됨", Toast.LENGTH_SHORT).show()
+                                            dbViewModel.insertLocationSmart(location, fallbackName) { success, usedFallback, finalName ->
+                                                if (success) {
+                                                    val msg = "$finalName 이름 추가됨"
+                                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                                 } else {
-                                                    Toast.makeText(context, "$name 은 이미 등록되어 있음", Toast.LENGTH_SHORT).show()
+                                                    val msg = if (usedFallback) "$finalName 은 이미 등록됨" else "$finalName 과 동좌표임"
+                                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                                 }
                                                 expanded = false
+                                                selectedPrediction = null
+                                                searchText = TextFieldValue("")
                                             }
                                         }
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("SearchScreen", "Place fetch 실패: ${e.message}", e)
+                                        selectedPrediction = null
                                     }
                             }
                         }) {
@@ -182,6 +191,7 @@ fun SearchScreen(navController: NavController) {
                             onClick = {
                                 searchText = TextFieldValue(fullText)
                                 l_name = name
+                                selectedPrediction = prediction
                                 expanded = false
                             }
                         )
@@ -189,7 +199,7 @@ fun SearchScreen(navController: NavController) {
                 }
             }
             WeatherCardScreen(
-                date = LocalDate.now(),
+                date = LocalDate.now(ZoneId.of("Asia/Seoul")),
                 isPast = false,
                 navController = navController
             )

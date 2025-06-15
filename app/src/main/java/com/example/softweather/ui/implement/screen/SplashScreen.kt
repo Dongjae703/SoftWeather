@@ -75,7 +75,7 @@ fun SplashScreen(onPermissionGranted: (Double, Double) -> Unit) {
 
     // 두 권한 다 허용되면 위치 받아오기
     LaunchedEffect(fineGranted, notificationGranted) {
-        if (fineGranted && notificationGranted && !locationFetched) {
+        if (fineGranted && notificationGranted) {
             locationFetched = true // 중복 호출 방지
             val location = try {
                 suspendCancellableCoroutine<Location?> { cont ->
